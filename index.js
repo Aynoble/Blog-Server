@@ -8,6 +8,7 @@ import multer from "multer";
 import userRoute from "./routes/users.js";
 import commentRoute from "./routes/comments.js";
 import likeRoute from "./routes/likes.js";
+import mysql from "mysql2";
 
 dotenv.config();
 
@@ -39,6 +40,13 @@ const upload = multer({ storage: storage });
 
 const profilePicUpload = multer({ storage: uploadStorage });
 
+const connection = mysql.createConnection({
+  host: "localhost",
+  user: "root",
+  password: process.env.dbSEC,
+  database: "blog",
+});
+
 app.post("/api/upload", upload.single("file"), function (req, res) {
   const file = req.file;
   res.status(200).json(file.filename);
@@ -53,6 +61,13 @@ app.post(
   }
 );
 
+app.get("/", (req, res) => {
+  connection.query("SELECT * FROM your-table", (error, results, fields) => {
+    if (error) throw error;
+    res.json(results);
+  });
+});
+
 app.use("/api/auth", authRoute);
 app.use("/api/users", userRoute);
 app.use("/api/posts", postRoute);
@@ -62,3 +77,5 @@ app.use("/api/likes", likeRoute);
 app.listen(process.env.PORT || 8800, () => {
   console.log("server is running");
 });
+
+export default app;
